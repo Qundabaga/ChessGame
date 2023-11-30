@@ -1,0 +1,28 @@
+fileFormatVersion: 2
+guid: 4eb03b44f5e777a49a5fe8addcd90f75
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - P: {fileID: -349962521, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - N: {fileID: -29953773, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - B: {fileID: -1783325194, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - R: {fileID: -678965530, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - Q: {fileID: 1585843427, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - K: {fileID: 2060664986, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - p: {fileID: -260617628, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - n: {fileID: 1193975424, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - b: {fileID: 191982404, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - r: {fileID: 1664954918, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - q: {fileID: 586612731, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - k: {fileID: -289459482, guid: 359c833503dd9b749a533edc6b85b7e0, type: 3}
+  - None: {fileID: 5787906805735699028, guid: cb8a1776c21d635498ed3385cd4841bb, type: 3}
+  - lightTile: {fileID: 5511586185028298467, guid: 7057582d6a9d71c40abff492dec789e8, type: 3}
+  - darkTile: {fileID: 2202282541552216207, guid: bd1f7afae83d3f543906f002d73a3bfe, type: 3}
+  - selectedPiece: {fileID: 3470781723034395204, guid: 579371e287fa0874497ea8d07196883f, type: 3}
+  - hint: {fileID: 3102459435745488025, guid: 9b74b439265a37346837f6e50b9a00b8, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
