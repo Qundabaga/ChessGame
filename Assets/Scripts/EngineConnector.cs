@@ -267,7 +267,7 @@ public class EngineConnector
 
     }
 
-    public void GetAnalysis(string fenString)
+    public string[] GetAnalysis(string fenString)
     {
         UnityEngine.Debug.Log("Start Analysis");
         //construct the analysis string
@@ -286,12 +286,17 @@ public class EngineConnector
 
         UnityEngine.Debug.Log("Read Analysis");
 
+        //to store each line of enigne output
         string output;
+        //to store full output
+        List<string> fullOutput = new List<string>();
+        //string[] fullOutput;
         bool moveFound = false;
 
         do
         {
             output = engineProcessStdOut.ReadLine();
+            fullOutput.Add(output);
             UnityEngine.Debug.Log(output);
             if (output.Contains("bestmove"))
             { 
@@ -299,33 +304,7 @@ public class EngineConnector
             }
         } while (!moveFound);
 
-        /*while ((output = engineProcessStdOut.ReadLine()) != null)
-        {
-            UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        }*/
-        /*UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());*/
+        return fullOutput.ToArray();
     }
 
     public void GetInfo()

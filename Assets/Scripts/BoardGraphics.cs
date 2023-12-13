@@ -22,6 +22,8 @@ public class BoardGraphics : MonoBehaviour
     public GameObject lightTile;
     public GameObject darkTile;
 
+    private bool isBoardFlipped = false;
+
     //Selected Piece tile
     public GameObject selectedPiece;
 
@@ -56,12 +58,12 @@ public class BoardGraphics : MonoBehaviour
     //select piece
     public void SelectPiece(int index)
     {
-        GameObject pieceTile = GameObject.Find($"{index}");
+        GameObject pieceTile = isBoardFlipped ? GameObject.Find($"{63-index}") : GameObject.Find($"{index}");
         pieceTile.GetComponent<SpriteRenderer>().color = new Color(149.0f / 255.0f, 130.0f / 255.0f, 0.0f, 1.0f);
         pieceTile.tag = "Selected";
     }
 
-    public void DeselectPiece()
+    /*public void DeselectPiece()
     {
         //GameObject pieceTile = GameObject.Find($"{index}");
         GameObject pieceTile = GameObject.FindWithTag("Selected");
@@ -85,6 +87,36 @@ public class BoardGraphics : MonoBehaviour
         }
 
         pieceTile.tag = "Untagged";
+    }*/
+
+    public void DeselectPiece()
+    {
+        //GameObject pieceTile = GameObject.Find($"{index}");
+        GameObject[] pieceTiles = GameObject.FindGameObjectsWithTag("Selected");
+
+        foreach (GameObject pieceTile in pieceTiles)
+        {
+            if (pieceTile == null)
+            {
+                return;
+            }
+
+            Color lightColor = new Color(245.0f / 255.0f, 177.0f / 255.0f, 145.0f / 255.0f, 1.0f);
+            Color darkColor = new Color(147 / 255.0f, 104.0f / 255.0f, 75.0f / 255.0f, 1.0f);
+
+            int index;
+            bool isInPlace = TryGetSquareIndexFromCoords(pieceTile.transform.position, out index);
+
+            int rank = index % 8;
+            int file = index / 8;
+
+            if (isInPlace)
+            {
+                pieceTile.GetComponent<SpriteRenderer>().color = (file + rank) % 2 == 0 ? lightColor : darkColor;
+            }
+
+            pieceTile.tag = "Untagged";
+        }
     }
 
     public void SelectSquare(int index)
@@ -120,6 +152,12 @@ public class BoardGraphics : MonoBehaviour
         int file = (int)Mathf.Round(xCords + 3.5f);
 
         squareIndex = rank * 8 + file;
+
+        if (isBoardFlipped)
+        {
+            squareIndex = 63 - squareIndex;
+        }
+
         return (Mathf.Abs(xCords) < 4f && Mathf.Abs(yCords) < 4f);
     }
 
@@ -256,7 +294,7 @@ public class BoardGraphics : MonoBehaviour
                 int index = rank * 8 + file;
 
                 SpriteRenderer pieceSprite = chessPieces[index].GetComponent<SpriteRenderer>();
-                Piece piece = board.GetPiece(index);
+                Piece piece = isBoardFlipped ? board.GetPiece(63 - index) : board.GetPiece(index);
                 SetSpritePiece(pieceSprite, piece);
             }
         }
@@ -274,10 +312,28 @@ public class BoardGraphics : MonoBehaviour
         {
             foreach (Move move in moves)
             {
-                hints[move.squareTargetIndex].GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, 0.5f);
+                if (isBoardFlipped)
+                {
+                    hints[63 - move.squareTargetIndex].GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, 0.5f);
+                }
+                else
+                {
+                    hints[move.squareTargetIndex].GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, 0.5f);
+                }
             }
         }
     }
+
+    public void FlipBoard(bool flip)
+    {
+        isBoardFlipped = flip;
+    }
+
+    public bool IsBoardFlipped()
+    {
+        return isBoardFlipped;
+    }
+
 
     public void AnimateMove(Move move, System.Action onAnimationCompleteCallback = null)
     {
@@ -285,6 +341,12 @@ public class BoardGraphics : MonoBehaviour
         //Get the indicies of squares involved in move
         int squareSourceIndex = move.squareSourceIndex;
         int squareTargetIndex = move.squareTargetIndex;
+
+        if (isBoardFlipped)
+        {
+            squareSourceIndex = 63 - squareSourceIndex;
+            squareTargetIndex = 63 - squareTargetIndex;
+        }
 
         //Get SpriteRenderer object of the pieces involved in the move
         SpriteRenderer pieceSourceSprite = chessPieces[squareSourceIndex].GetComponent<SpriteRenderer>();
@@ -313,6 +375,12 @@ public class BoardGraphics : MonoBehaviour
         //Get the indicies of squares involved in move
         int squareSourceIndex = move.squareTargetIndex;
         int squareTargetIndex = move.squareSourceIndex;
+
+        if(isBoardFlipped)
+        {
+            squareSourceIndex = 63 - squareSourceIndex;
+            squareTargetIndex = 63 - squareTargetIndex;
+        }
 
         //Get SpriteRenderer object of the pieces involved in the move
         SpriteRenderer pieceSourceSprite = chessPieces[squareSourceIndex].GetComponent<SpriteRenderer>();

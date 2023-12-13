@@ -5,7 +5,10 @@ using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 using static Board;
+using System.Text;
 
 public class ChessGame : MonoBehaviour
 {
@@ -57,7 +60,8 @@ public class ChessGame : MonoBehaviour
     private PieceSelection pieceSelection;
     private MoveAnimation moveAnimation;
     bool animationFinished = false;
-    private Piece.Color playerColor = Piece.Color.White;
+    private static Piece.Color playerColor = Piece.Color.White;
+    private Piece.Color playerColorChange = Piece.Color.White;
     private GameState gameState = GameState.PlayerMoving;
 
     // stockfish chess engine
@@ -68,6 +72,16 @@ public class ChessGame : MonoBehaviour
     private System.Threading.Semaphore computerThreadBarrier = new System.Threading.Semaphore(0, 1);
     private System.Threading.Mutex mutex = new System.Threading.Mutex();
     private System.Threading.Mutex engineConnectorMutex = new System.Threading.Mutex();
+
+    //Create text box to save the moves there
+    public TMP_Text moveList;
+
+    //save the digits and letters of the board to change them if black is played
+    public TMP_Text letter_1, letter_2, letter_3, letter_4, letter_5, letter_6, letter_7, letter_8;
+    public TMP_Text digit_1, digit_2, digit_3, digit_4, digit_5, digit_6, digit_7, digit_8;
+
+    //Add the Game Over screen to show when either of side won
+    public GameOverScreen GameOverScreen;
 
     //select & deselect piece
 
@@ -114,14 +128,60 @@ public class ChessGame : MonoBehaviour
             }
             engineConnectorMutex.ReleaseMutex();
 
+
+            //update board ui
             DeselectPiece();
+            boardGraphics.FlipBoard(color == Piece.Color.Black);
             boardGraphics.UpdateSprites();
 
             // change game state
-
             gameState = GameState.PlayerMoving;
         }
         mutex.ReleaseMutex();
+
+        //set the digits and numbers on the board based on the color
+        switch (color)
+        {
+            case Piece.Color.White:
+                letter_1.text = "a";
+                letter_2.text = "b";
+                letter_3.text = "c";
+                letter_4.text = "d";
+                letter_5.text = "e";
+                letter_6.text = "f";
+                letter_7.text = "g";
+                letter_8.text = "h";
+
+                digit_1.text = "1";
+                digit_2.text = "2";
+                digit_3.text = "3";
+                digit_4.text = "4";
+                digit_5.text = "5";
+                digit_6.text = "6";
+                digit_7.text = "7";
+                digit_8.text = "8";
+                break;
+            case Piece.Color.Black:
+                letter_1.text = "h";
+                letter_2.text = "g";
+                letter_3.text = "f";
+                letter_4.text = "e";
+                letter_5.text = "d";
+                letter_6.text = "c";
+                letter_7.text = "b";
+                letter_8.text = "a";
+
+                digit_1.text = "8";
+                digit_2.text = "7";
+                digit_3.text = "6";
+                digit_4.text = "5";
+                digit_5.text = "4";
+                digit_6.text = "3";
+                digit_7.text = "2";
+                digit_8.text = "1";
+                break;
+        }
+
     }
 
     public void SelectPromotionPieceType(Piece.Type type)
@@ -154,6 +214,7 @@ public class ChessGame : MonoBehaviour
     private void ComputerTurn()
     {
         Board boardCopy = new Board();
+        Debug.Log("Computer Turn");
 
         while (true)
         {
@@ -211,6 +272,7 @@ public class ChessGame : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log("Start 1");
         // precalculate moves
         MoveGeneration.PrecalculatedMoves();
 
@@ -231,13 +293,20 @@ public class ChessGame : MonoBehaviour
 
         computerThread = new Thread(ComputerTurn);
         computerThread.Start();
-
+        Debug.Log("Start 2");
     }
 
     public void StartGame()
     {
+        // Wait for the thread to finish
+        computerThread.Abort();
+
+        //change the player color
+        playerColor = playerColorChange;
+
         //disconnect from the Stockfish Chess Engine
         engineConnector.Disconnect();
+
         // Reload the current scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
@@ -288,7 +357,7 @@ public class ChessGame : MonoBehaviour
         Debug.Log(gameState);
     }
 
-    public void CheckDropdown(int val)
+    public void ChangeDifficulty(int val)
     {
         switch (val)
         {
@@ -320,11 +389,42 @@ public class ChessGame : MonoBehaviour
         }
     }
 
+    public void ChangeColor(int val)
+    {
+        Debug.Log("Color Changed");
+        switch (val)
+        {
+            case 0:
+                playerColorChange = Piece.Color.White;
+                break;
+            case 1:
+                playerColorChange = Piece.Color.Black;
+                break;
+        }
+
+        Debug.Log("Color " + playerColorChange);
+    }
+
     public void GetInfo()
     {
-        engineConnector.GetAnalysis(board.GetFEN());
-        //Debug.Log(board.GetFEN());
-        //engineConnector.GetInfo();
+        moveList.text = "";
+        string[] analysisOutput = engineConnector.GetAnalysis(board.GetFEN());
+
+        foreach (string output in  analysisOutput)
+        {
+            if(output.Contains("info depth 18 seldepth") || output.Contains("info depth 19 seldepth") || output.Contains("info depth 20 seldepth"))
+            {
+                string[] line = output.Split(' ');
+                StringBuilder analysis = new StringBuilder();
+
+                analysis.AppendFormat("score cp {0} ", int.Parse(line[9]) > 0 ? "+" + line[9] : line[9]);
+                analysis.AppendLine(string.Join(" ", line, 21,line.Length - 21));
+
+                moveList.text += analysis + "\n";
+            }
+        }
+
+        moveList.text += analysisOutput[analysisOutput.Length - 1];  
     }
 
 
@@ -418,6 +518,9 @@ public class ChessGame : MonoBehaviour
                     }
                     break;
                 case GameState.AnimationJustFinished:
+                    //clean analysis output
+                    moveList.text = "";
+
                     //update sprites
                     boardGraphics.UpdateSprites();
                     Debug.Log("Sprites Updated");
@@ -431,10 +534,20 @@ public class ChessGame : MonoBehaviour
                         if (isKingInCheck) // if king in check then it is checkmate
                         {
                             Debug.Log("Checkmate!");
+                            
+                            if(board.GetTurnColor() == Piece.Color.White)
+                            {
+                                GameOverScreen.Message("Checkmate!\nBlack wins.");
+                            }
+                            else
+                            {
+                                GameOverScreen.Message("Checkmate!\nWhite wins.");
+                            }
                         }
                         else
                         {
                             Debug.Log("Draw");
+                            GameOverScreen.Message("Draw!");
                         }
 
                         gameState = GameState.GameEnd;
@@ -527,10 +640,12 @@ public class ChessGame : MonoBehaviour
                                 }
                                 else
                                 {
+                                    boardGraphics.DeselectPiece();
                                     Piece piece = board.GetPiece(squareIndex);
 
                                     if (piece.color == playerColor)
                                     {
+
                                         //get legal moves for the 
                                         List<Move> legalMoves = MoveGeneration.GetLegalMoves(board, squareIndex);
 
