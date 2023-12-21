@@ -37,7 +37,7 @@ public static class FenValidator
         // check if each row coantains valid pieces (1-8 characters:  p, n, b, r, q, k, P, N, B, R, Q, K)
         foreach (string row in rows)
         {
-            if(row.Length < 1 || row.Length > 8) { return false; }
+            if (row.Length < 1 || row.Length > 8) { return false; }
 
             foreach (char piece in row)
             {

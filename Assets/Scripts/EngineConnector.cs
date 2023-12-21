@@ -75,8 +75,6 @@ public class EngineConnector
         mutex.ReleaseMutex();
 
         engineProcess.WaitForExit();
-
-        UnityEngine.Debug.Log("Disconnected from engine");
     }
 
     public void LimitStrengthTo(int eloValue)
@@ -306,18 +304,4 @@ public class EngineConnector
 
         return fullOutput.ToArray();
     }
-
-    public void GetInfo()
-    {
-        mutex.WaitOne();
-        {
-            engineProcessStdIn.Write("uci");
-        }
-        mutex.ReleaseMutex();
-        
-        UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-        //UnityEngine.Debug.Log(engineProcessStdOut.ReadLine());
-    }
-
-
 }

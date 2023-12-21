@@ -86,14 +86,6 @@ public class Board
     private List<int> whitePiecesIndicies = new List<int>();
     private List<int> blackPiecesIndicies = new List<int>();
 
-    public void ListPieces()
-    {
-        for (int index = 0; index < pieces.Length; index++)
-        {
-            Debug.Log(pieces[index].type + " " + pieces[index].color + " index: " + index);
-        }
-    }
-
     //stack the moves and states as the game is progressing
 
     private Stack<Move> moves = new Stack<Move>();
@@ -444,12 +436,6 @@ public class Board
         //push current state into the stack
         states.Push(currentState);
 
-
-        if(move.pieceSource.color == Piece.Color.None)
-        {
-            Debug.Log("IS NOT POSSIBLE!!!");
-        }
-
         // modify indicies list
         switch (move.pieceSource.color)
         {
@@ -715,7 +701,6 @@ public class Board
         playerMove = moves.Peek();
         undoneMoves.Push(playerMove);
         UndoMove();
-        Debug.Log(undoneMoves.Count);
     }
 
     //Redo moves and delete them from the stack
@@ -725,7 +710,6 @@ public class Board
         MakeMove(playerMove);
         computerMove = undoneMoves.Pop();
         MakeMove(computerMove);
-        Debug.Log(undoneMoves.Count);
     }
 
     public void ClearUndoneMoves()

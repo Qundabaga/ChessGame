@@ -214,7 +214,6 @@ public class ChessGame : MonoBehaviour
     private void ComputerTurn()
     {
         Board boardCopy = new Board();
-        Debug.Log("Computer Turn");
 
         while (true)
         {
@@ -352,11 +351,6 @@ public class ChessGame : MonoBehaviour
         boardGraphics.SelectPiece(move.squareTargetIndex);
     }
 
-    public void CheckGameState()
-    {
-        Debug.Log(gameState);
-    }
-
     public void ChangeDifficulty(int val)
     {
         switch (val)
@@ -364,34 +358,28 @@ public class ChessGame : MonoBehaviour
             case 1:
                 Debug.Log("Novice");
                 computerElo = 250;
-                //engineConnector.LimitStrengthTo(250);
                 break;
             case 2:
                 Debug.Log("Beginner");
                 computerElo = 400;
-                //engineConnector.LimitStrengthTo(400);
                 break;
             case 3:
                 Debug.Log("Intermediate");
                 computerElo = 800;
-                //engineConnector.LimitStrengthTo(800);
                 break;
             case 4:
                 Debug.Log("Advanced");
                 computerElo = 1400;
-                //engineConnector.LimitStrengthTo(1400);
                 break;
             case 5:
                 Debug.Log("Expert");
                 computerElo = 1800;
-                //engineConnector.LimitStrengthTo(1800);
                 break;
         }
     }
 
     public void ChangeColor(int val)
     {
-        Debug.Log("Color Changed");
         switch (val)
         {
             case 0:
@@ -401,8 +389,6 @@ public class ChessGame : MonoBehaviour
                 playerColorChange = Piece.Color.Black;
                 break;
         }
-
-        Debug.Log("Color " + playerColorChange);
     }
 
     public void GetInfo()
