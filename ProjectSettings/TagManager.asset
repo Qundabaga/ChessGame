@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Hint
   - Selected
+  - BestMove
   layers:
   - Default
   - TransparentFX

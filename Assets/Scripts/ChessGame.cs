@@ -16,8 +16,6 @@ public class ChessGame : MonoBehaviour
 
     private enum GameState
     {
-        UndoMove,
-        RedoMove,
         AnimateMove,
         AnimateMoveBackward,
         AnimateMoveForward,
@@ -271,7 +269,6 @@ public class ChessGame : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Start 1");
         // precalculate moves
         MoveGeneration.PrecalculatedMoves();
 
@@ -292,7 +289,6 @@ public class ChessGame : MonoBehaviour
 
         computerThread = new Thread(ComputerTurn);
         computerThread.Start();
-        Debug.Log("Start 2");
     }
 
     public void StartGame()
@@ -324,7 +320,7 @@ public class ChessGame : MonoBehaviour
     //Redo move which had been undone before
     public void RedoMove()
     {
-        if (board.GetUndoneMoveCount() > 0 && gameState != GameState.AnimateMoveForward && gameState != GameState.WaitingForAnimationToFinish)
+        if (board.GetUndoneMoveCount() > 0 && gameState == GameState.PlayerMoving)
         {
             gameState = GameState.AnimateMoveForward;
         }
@@ -332,6 +328,9 @@ public class ChessGame : MonoBehaviour
 
     public void GetHint()
     {
+        // hide previous hint
+        boardGraphics.DeselectHint();
+
         // copy board
         Board boardCopy = new Board();
         board.CopyBoardState(boardCopy);
@@ -347,8 +346,10 @@ public class ChessGame : MonoBehaviour
         }
         engineConnectorMutex.ReleaseMutex();
 
-        boardGraphics.SelectPiece(move.squareSourceIndex);
-        boardGraphics.SelectPiece(move.squareTargetIndex);
+        //boardGraphics.SelectPiece(move.squareSourceIndex);
+        //boardGraphics.SelectPiece(move.squareTargetIndex);
+        boardGraphics.HilightHint(move.squareSourceIndex);
+        boardGraphics.HilightHint(move.squareTargetIndex);
     }
 
     public void ChangeDifficulty(int val)
@@ -356,23 +357,18 @@ public class ChessGame : MonoBehaviour
         switch (val)
         {
             case 1:
-                Debug.Log("Novice");
                 computerElo = 250;
                 break;
             case 2:
-                Debug.Log("Beginner");
                 computerElo = 400;
                 break;
             case 3:
-                Debug.Log("Intermediate");
                 computerElo = 800;
                 break;
             case 4:
-                Debug.Log("Advanced");
                 computerElo = 1400;
                 break;
             case 5:
-                Debug.Log("Expert");
                 computerElo = 1800;
                 break;
         }
@@ -425,6 +421,9 @@ public class ChessGame : MonoBehaviour
                     //Clean the undone move stack if new move is done
                     board.ClearUndoneMoves();
 
+                    // hide the best move hint
+                    boardGraphics.DeselectHint();
+
                     //make the move
 
                     board.MakeMove(moveAnimation.move);
@@ -450,6 +449,10 @@ public class ChessGame : MonoBehaviour
                     break;
                 //For move back button
                 case GameState.AnimateMoveBackward:
+
+                    // hide the best move hint
+                    boardGraphics.DeselectHint();
+
                     //If some moves were already done
                     if (board.GetStateCount() > 0)
                     {
@@ -472,11 +475,13 @@ public class ChessGame : MonoBehaviour
                         {
                             gameState = GameState.WaitingForAnimationToFinish;
                         }
-
-                        Debug.Log("Player Moves");
                     }
                     break;
                 case GameState.AnimateMoveForward:
+
+                    // hide the best move hint
+                    boardGraphics.DeselectHint();
+
                     if (board.GetUndoneMoveCount() > 0)
                     {
                         engineConnector.MoveForward();
@@ -509,7 +514,6 @@ public class ChessGame : MonoBehaviour
 
                     //update sprites
                     boardGraphics.UpdateSprites();
-                    Debug.Log("Sprites Updated");
                     boardGraphics.DeselectPieceSquare();
                     //check if game ended
                     List<Move> avaiableMoves = MoveGeneration.GetAllLegalMovesByColor(board, board.GetTurnColor());
@@ -519,8 +523,6 @@ public class ChessGame : MonoBehaviour
                     {
                         if (isKingInCheck) // if king in check then it is checkmate
                         {
-                            Debug.Log("Checkmate!");
-                            
                             if(board.GetTurnColor() == Piece.Color.White)
                             {
                                 GameOverScreen.Message("Checkmate!\nBlack wins.");
@@ -532,7 +534,6 @@ public class ChessGame : MonoBehaviour
                         }
                         else
                         {
-                            Debug.Log("Draw");
                             GameOverScreen.Message("Draw!");
                         }
 
@@ -663,23 +664,6 @@ public class ChessGame : MonoBehaviour
 
                         gameState = GameState.WaitingForComputer;
                         computerThreadBarrier.Release();
-                    }
-
-                    break;
-                case GameState.UndoMove:
-
-                    //If some moves were already done
-                    if (board.GetStateCount() > 0)
-                    {
-                        engineConnector.MoveBack();
-                        board.MoveBack(ref computerMove, ref playerMove);
-
-                        //gameState = GameState.AnimateMoveBackward;
-                        gameState = GameState.AnimateMoveBackward;
-
-
-                        //boardGraphics.UpdateSprites();
-                        Debug.Log("Player Moves");
                     }
 
                     break;

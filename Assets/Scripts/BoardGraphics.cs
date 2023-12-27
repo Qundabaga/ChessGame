@@ -55,19 +55,10 @@ public class BoardGraphics : MonoBehaviour
         return piecesSprites[index];
     }
 
-    //select piece
-    public void SelectPiece(int index)
+    // set color
+    private void setColor(GameObject pieceTile)
     {
-        GameObject pieceTile = isBoardFlipped ? GameObject.Find($"{63-index}") : GameObject.Find($"{index}");
-        pieceTile.GetComponent<SpriteRenderer>().color = new Color(149.0f / 255.0f, 130.0f / 255.0f, 0.0f, 1.0f);
-        pieceTile.tag = "Selected";
-    }
-
-    /*public void DeselectPiece()
-    {
-        //GameObject pieceTile = GameObject.Find($"{index}");
-        GameObject pieceTile = GameObject.FindWithTag("Selected");
-        if ( pieceTile == null )
+        if (pieceTile == null)
         {
             return;
         }
@@ -87,16 +78,25 @@ public class BoardGraphics : MonoBehaviour
         }
 
         pieceTile.tag = "Untagged";
-    }*/
+    }
+
+    //select piece
+    public void SelectPiece(int index)
+    {
+        GameObject pieceTile = isBoardFlipped ? GameObject.Find($"{63-index}") : GameObject.Find($"{index}");
+        pieceTile.GetComponent<SpriteRenderer>().color = new Color(149.0f / 255.0f, 130.0f / 255.0f, 0.0f, 1.0f);
+        pieceTile.tag = "Selected";
+    }
+
 
     public void DeselectPiece()
     {
-        //GameObject pieceTile = GameObject.Find($"{index}");
         GameObject[] pieceTiles = GameObject.FindGameObjectsWithTag("Selected");
 
         foreach (GameObject pieceTile in pieceTiles)
         {
-            if (pieceTile == null)
+            setColor(pieceTile);
+            /*if (pieceTile == null)
             {
                 return;
             }
@@ -115,9 +115,49 @@ public class BoardGraphics : MonoBehaviour
                 pieceTile.GetComponent<SpriteRenderer>().color = (file + rank) % 2 == 0 ? lightColor : darkColor;
             }
 
-            pieceTile.tag = "Untagged";
+            pieceTile.tag = "Untagged";*/
         }
     }
+
+    //hilight hint
+    public void HilightHint(int index)
+    {
+        GameObject pieceTile = isBoardFlipped ? GameObject.Find($"{63 - index}") : GameObject.Find($"{index}");
+        pieceTile.GetComponent<SpriteRenderer>().color = new Color(149.0f / 255.0f, 130.0f / 255.0f, 0.0f, 1.0f);
+        pieceTile.tag = "BestMove";
+    }
+
+    //deselect the hint
+    public void DeselectHint()
+    {
+        GameObject[] pieceTiles = GameObject.FindGameObjectsWithTag("BestMove");
+
+        foreach (GameObject pieceTile in pieceTiles)
+        {
+            setColor(pieceTile);
+            /*if (pieceTile == null)
+            {
+                return;
+            }
+
+            Color lightColor = new Color(245.0f / 255.0f, 177.0f / 255.0f, 145.0f / 255.0f, 1.0f);
+            Color darkColor = new Color(147 / 255.0f, 104.0f / 255.0f, 75.0f / 255.0f, 1.0f);
+
+            int index;
+            bool isInPlace = TryGetSquareIndexFromCoords(pieceTile.transform.position, out index);
+
+            int rank = index % 8;
+            int file = index / 8;
+
+            if (isInPlace)
+            {
+                pieceTile.GetComponent<SpriteRenderer>().color = (file + rank) % 2 == 0 ? lightColor : darkColor;
+            }
+
+            pieceTile.tag = "Untagged";*/
+        }
+    }
+
 
     public void SelectSquare(int index)
     {
