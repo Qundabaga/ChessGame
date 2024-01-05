@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Timers;
 using UnityEngine;
-//using System;
 using static Board;
 
 public class BoardGraphics : MonoBehaviour
@@ -24,9 +23,6 @@ public class BoardGraphics : MonoBehaviour
 
     private bool isBoardFlipped = false;
 
-    //Selected Piece tile
-    public GameObject selectedPiece;
-
     //Hint GameObject
     public GameObject hint;
 
@@ -36,12 +32,6 @@ public class BoardGraphics : MonoBehaviour
     private GameObject[] chessPieces = new GameObject[64];
     private Sprite[] piecesSprites = new Sprite[64];
     private GameObject[] hints = new GameObject[64];
-
-    private int selectedSquareIndex;
-    private bool showSelectedSquare;
-
-    private int selectedPieceSquareIndex;
-    private bool showSelectedPieceSquare;
 
     // connect to board with graphics
     public void ConnectToBoard(Board board)
@@ -96,26 +86,6 @@ public class BoardGraphics : MonoBehaviour
         foreach (GameObject pieceTile in pieceTiles)
         {
             setColor(pieceTile);
-            /*if (pieceTile == null)
-            {
-                return;
-            }
-
-            Color lightColor = new Color(245.0f / 255.0f, 177.0f / 255.0f, 145.0f / 255.0f, 1.0f);
-            Color darkColor = new Color(147 / 255.0f, 104.0f / 255.0f, 75.0f / 255.0f, 1.0f);
-
-            int index;
-            bool isInPlace = TryGetSquareIndexFromCoords(pieceTile.transform.position, out index);
-
-            int rank = index % 8;
-            int file = index / 8;
-
-            if (isInPlace)
-            {
-                pieceTile.GetComponent<SpriteRenderer>().color = (file + rank) % 2 == 0 ? lightColor : darkColor;
-            }
-
-            pieceTile.tag = "Untagged";*/
         }
     }
 
@@ -135,52 +105,8 @@ public class BoardGraphics : MonoBehaviour
         foreach (GameObject pieceTile in pieceTiles)
         {
             setColor(pieceTile);
-            /*if (pieceTile == null)
-            {
-                return;
-            }
-
-            Color lightColor = new Color(245.0f / 255.0f, 177.0f / 255.0f, 145.0f / 255.0f, 1.0f);
-            Color darkColor = new Color(147 / 255.0f, 104.0f / 255.0f, 75.0f / 255.0f, 1.0f);
-
-            int index;
-            bool isInPlace = TryGetSquareIndexFromCoords(pieceTile.transform.position, out index);
-
-            int rank = index % 8;
-            int file = index / 8;
-
-            if (isInPlace)
-            {
-                pieceTile.GetComponent<SpriteRenderer>().color = (file + rank) % 2 == 0 ? lightColor : darkColor;
-            }
-
-            pieceTile.tag = "Untagged";*/
         }
     }
-
-
-    public void SelectSquare(int index)
-    {
-        selectedSquareIndex = index;
-        showSelectedSquare = true;
-    }
-
-    public void DeselectSquare()
-    {
-        showSelectedSquare = false;
-    }
-
-    public void SelectPieceSquare(int index)
-    {
-        selectedPieceSquareIndex = index;
-        showSelectedPieceSquare = true;
-    }
-
-    public void DeselectPieceSquare()
-    {
-        showSelectedPieceSquare = false;
-    }
-
 
     //get square index 
     public bool TryGetSquareIndexFromCoords(Vector2 coords, out int squareIndex)

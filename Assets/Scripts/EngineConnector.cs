@@ -56,7 +56,6 @@ public class EngineConnector
             engineProcessStdOut = engineProcess.StandardOutput;
             engineProcessStdIn = engineProcess.StandardInput;
 
-            UnityEngine.Debug.Log("Connected to engine: " + enginePath);
         }
         catch (Exception e)
         {
@@ -181,7 +180,7 @@ public class EngineConnector
         
         if (chosenMove.flags == Move.Flags.Promotion)
         {
-            chosenMove.promotionPieceType = pieceTypeFromSymbol[strMove[4]];
+            chosenMove.promotionPieceType = Piece.Type.Queen;//pieceTypeFromSymbol[strMove[4]];
         }
 
         return chosenMove;
@@ -192,8 +191,6 @@ public class EngineConnector
     {
         string strMove = FromMoveToString(move);
         moves.Add(strMove);
-        UnityEngine.Debug.Log("Move: " + strMove);
-        UnityEngine.Debug.Log("Moves: " + moves);
     }
 
     public void MoveBack()
@@ -258,16 +255,13 @@ public class EngineConnector
         } while (!moveFound);
 
         // from string to actual move
-        UnityEngine.Debug.Log("Best move is " +  bestMoveString);
         Move bestMove = FromStringToMove(board, bestMoveString);
-        UnityEngine.Debug.Log("Best move is from " + bestMove.squareSourceIndex + " to " + bestMove.squareTargetIndex);
         return bestMove;
 
     }
 
     public string[] GetAnalysis(string fenString)
     {
-        UnityEngine.Debug.Log("Start Analysis");
         //construct the analysis string
         StringBuilder command = new StringBuilder();
 
@@ -282,13 +276,10 @@ public class EngineConnector
         }
         mutex.ReleaseMutex();
 
-        UnityEngine.Debug.Log("Read Analysis");
-
         //to store each line of enigne output
         string output;
         //to store full output
         List<string> fullOutput = new List<string>();
-        //string[] fullOutput;
         bool moveFound = false;
 
         do

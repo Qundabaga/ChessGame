@@ -351,6 +351,7 @@ public static class MoveGeneration
                             squareTargetIndex = targetIndex,
                             pieceSource = piece,
                             pieceTarget = targetPiece,
+                            flags = (j == 6) ? Move.Flags.Promotion : Move.Flags.None,
                             promotionPieceType = board.PromotionPieceType
                         });
                     }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,6 +10,7 @@ using UnityEngine.UI;
 using TMPro;
 using static Board;
 using System.Text;
+using System.Linq;
 
 public class ChessGame : MonoBehaviour
 {
@@ -29,7 +31,6 @@ public class ChessGame : MonoBehaviour
     private struct PieceSelection
     {
         public bool isSelected;
-        public bool isHolding;
         public int squareIndex;
         public List<Move> legalMoves;
     }
@@ -37,23 +38,19 @@ public class ChessGame : MonoBehaviour
     private struct MoveAnimation
     {
         public Move move;
-        public bool dragged;
     }
 
     // for movin backwards
     Move computerMove = new Move();
     Move playerMove = new Move();
 
-    private static readonly string checkmateString = "Checkmate!";
-    private static readonly string drawString = "Draw!";
-
     //Made static so it does not change on scene reset
     private static int computerElo = 250;
 
-    private bool startGame = false;
-
     private Board board = new Board();
     private BoardGraphics boardGraphics;
+
+    private static string selectedFEN = StartFEN;
 
     private PieceSelection pieceSelection;
     private MoveAnimation moveAnimation;
@@ -64,7 +61,7 @@ public class ChessGame : MonoBehaviour
 
     // stockfish chess engine
 
-    private bool engineRunning = true;
+    //private bool engineRunning = true;
     private EngineConnector engineConnector = new EngineConnector();
     private Thread computerThread;
     private System.Threading.Semaphore computerThreadBarrier = new System.Threading.Semaphore(0, 1);
@@ -78,6 +75,9 @@ public class ChessGame : MonoBehaviour
     public TMP_Text letter_1, letter_2, letter_3, letter_4, letter_5, letter_6, letter_7, letter_8;
     public TMP_Text digit_1, digit_2, digit_3, digit_4, digit_5, digit_6, digit_7, digit_8;
 
+    // Get the text of FEN input field
+    public TMP_InputField fenInput;
+
     //Add the Game Over screen to show when either of side won
     public GameOverScreen GameOverScreen;
 
@@ -86,7 +86,6 @@ public class ChessGame : MonoBehaviour
     private void SelectPiece(int squareIndex, List<Move> legalMoves)
     {
         pieceSelection.isSelected = true;
-        pieceSelection.isHolding = true;
         pieceSelection.squareIndex = squareIndex;
         pieceSelection.legalMoves = legalMoves;
     }
@@ -94,20 +93,26 @@ public class ChessGame : MonoBehaviour
     private void DeselectPiece()
     {
         pieceSelection.isSelected = false;
-        pieceSelection.isHolding = false;
     }
 
     // play as selected color with the selected fen
 
     public void PlayAsColor(string fen, Piece.Color color)
     {
-        // validating the fen
-        if (!FenValidator.IsFenStringValid(fen))
-        {
-            UnityEngine.Debug.Log(fen + " is not a valid fen string");
-            return;
-        }
+        Debug.Log("FEN -" + fen);
 
+        if (fen != StartFEN)
+        {
+            // validating the fen
+            if (!FenValidator.IsFenStringValid(fen))
+            {
+                UnityEngine.Debug.Log(fen + " is not a valid fen string");
+                // change to standart fen if providet fen is not valid
+                fen = StartFEN;
+            }
+
+            color = fen.Split(' ')[1] == "w" ? Piece.Color.White : Piece.Color.Black;
+        }
         // send stop to engine
         engineConnector.StopCalculating();
 
@@ -119,6 +124,20 @@ public class ChessGame : MonoBehaviour
 
             //load fen
             board.LoadFEN(fen);
+
+            // Check if board created by fen is valid in terms of chess rules
+
+            if(MoveGeneration.IsKingInCheck(board, Piece.Color.White) || MoveGeneration.IsKingInCheck(board, Piece.Color.Black))
+            {
+                // change to standart fen if providet fen is not valid
+                fen = StartFEN;
+
+                //load fen again
+                board.LoadFEN(fen);
+            }
+
+
+
 
             engineConnectorMutex.WaitOne();
             {
@@ -204,11 +223,6 @@ public class ChessGame : MonoBehaviour
         return fen;
     }
 
-    public void SelectComputerELO(int elo)
-    {
-        engineConnector.LimitStrengthTo(elo);
-    }
-
     private void ComputerTurn()
     {
         Board boardCopy = new Board();
@@ -222,7 +236,6 @@ public class ChessGame : MonoBehaviour
             bool aborted;
 
             //perform a copy of current state of the board
-
             mutex.WaitOne();
             {
                 aborted = gameState != GameState.WaitingForComputer;
@@ -253,7 +266,6 @@ public class ChessGame : MonoBehaviour
                     if (!aborted)
                     {
                         moveAnimation.move = move;
-                        moveAnimation.dragged = false;
                         gameState = GameState.AnimateMove;
                     }
                 }
@@ -281,9 +293,9 @@ public class ChessGame : MonoBehaviour
         engineConnector.ConnectToEngine("Assets/ChessEngines/stockfish/stockfish.exe");
         engineConnector.LimitStrengthTo(computerElo);
 
-        //load fen 4Q3/2B2Pp1/p5kp/P7/4q3/b1p4P/5PPK/4r3 w - -
+        PlayAsColor(selectedFEN, playerColor);
+        selectedFEN = StartFEN;
 
-        PlayAsColor(StartFEN, playerColor);
 
         // computer thread
 
@@ -311,7 +323,7 @@ public class ChessGame : MonoBehaviour
     {
         if (gameState == GameState.PlayerMoving)
         {
-            if (board.GetStateCount() > 0)
+            if (board.GetStateCount() > 1)
             {
                 gameState = GameState.AnimateMoveBackward;            
             }
@@ -346,8 +358,6 @@ public class ChessGame : MonoBehaviour
         }
         engineConnectorMutex.ReleaseMutex();
 
-        //boardGraphics.SelectPiece(move.squareSourceIndex);
-        //boardGraphics.SelectPiece(move.squareTargetIndex);
         boardGraphics.HilightHint(move.squareSourceIndex);
         boardGraphics.HilightHint(move.squareTargetIndex);
     }
@@ -409,6 +419,36 @@ public class ChessGame : MonoBehaviour
         moveList.text += analysisOutput[analysisOutput.Length - 1];  
     }
 
+    public void GetFenInput(string fen)
+    {
+        Debug.Log(fen);
+        selectedFEN = fen;
+    }
+
+
+    public void ReadRandomFenFromFile()
+    {
+        // Get random number from 1 to 3000000
+        System.Random rand = new System.Random();
+        int randomRow = rand.Next(1, 3000000);
+
+        // get the fen string at the random row
+        string fenString;
+
+        using (var sr = new StreamReader("Assets/unique04.fen"))
+        {
+            for (int i = 1; i < randomRow; i++)
+            {
+                sr.ReadLine();
+            }
+
+            fenString = sr.ReadLine();
+        }
+
+        // Get only BoardPosition, color, castling, enPassant parts
+        fenInput.text = string.Join(" ", fenString.Split().Take(4));
+    }
+
 
     // Update is called once per frame
     void Update()
@@ -430,8 +470,6 @@ public class ChessGame : MonoBehaviour
                     engineConnector.SendMove(moveAnimation.move);
 
                     // board graphics
-                    boardGraphics.DeselectPieceSquare();
-                    boardGraphics.DeselectSquare();
                     boardGraphics.SetHintMoves(null);
 
                     animationFinished = false;
@@ -514,7 +552,6 @@ public class ChessGame : MonoBehaviour
 
                     //update sprites
                     boardGraphics.UpdateSprites();
-                    boardGraphics.DeselectPieceSquare();
                     //check if game ended
                     List<Move> avaiableMoves = MoveGeneration.GetAllLegalMovesByColor(board, board.GetTurnColor());
                     bool isKingInCheck = MoveGeneration.IsKingInCheck(board, board.GetTurnColor());
@@ -585,7 +622,6 @@ public class ChessGame : MonoBehaviour
 
                                             //animate move
                                             moveAnimation.move = move;
-                                            moveAnimation.dragged = false;
                                             gameState = GameState.AnimateMove;
 
                                             break;
@@ -609,7 +645,6 @@ public class ChessGame : MonoBehaviour
 
                                             // board select the piece
                                             boardGraphics.SelectPiece(squareIndex);
-                                            boardGraphics.SelectPieceSquare(squareIndex);
                                             boardGraphics.SetHintMoves(legalMoves);
                                         }
                                         else
@@ -620,7 +655,6 @@ public class ChessGame : MonoBehaviour
                                             //remove the board hints and deselcet piece
 
                                             boardGraphics.DeselectPiece();
-                                            boardGraphics.DeselectPieceSquare();
                                             boardGraphics.SetHintMoves(null);
                                         }
                                     }
@@ -641,7 +675,6 @@ public class ChessGame : MonoBehaviour
 
                                         //board select piece
                                         boardGraphics.SelectPiece(squareIndex);
-                                        boardGraphics.SelectPieceSquare(squareIndex);
                                         boardGraphics.SetHintMoves(legalMoves);
                                     }
                                 }
@@ -653,7 +686,6 @@ public class ChessGame : MonoBehaviour
 
                                 // remove the board hints and deselect piece
                                 boardGraphics.DeselectPiece();
-                                boardGraphics.DeselectPieceSquare();
                                 boardGraphics.SetHintMoves(null);
                             }
                         }

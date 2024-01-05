@@ -69,7 +69,6 @@ public class Board
     public static readonly string StartFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 
     // towers squares & king squares
-
     public static readonly int A1 = 56, H1 = 63, A8 = 0, H8 = 7; // tower squares
     public static readonly int E1 = 60, E8 = 4; // king squares
     public static readonly int C1 = 58, C8 = 2, G1 = 62, G8 = 6;
@@ -77,7 +76,6 @@ public class Board
 
 
     // promotion piece
-
     public Piece.Type PromotionPieceType = Piece.Type.Queen;
 
     //pieces array
@@ -87,7 +85,6 @@ public class Board
     private List<int> blackPiecesIndicies = new List<int>();
 
     //stack the moves and states as the game is progressing
-
     private Stack<Move> moves = new Stack<Move>();
     private Stack<State> states = new Stack<State>();
 
@@ -113,12 +110,6 @@ public class Board
                 return blackPiecesIndicies;
         }
         return null;
-    }
-
-    //get last move
-    public bool TryGetLastMove(out Move move)
-    {
-        return moves.TryPeek(out move);
     }
 
     //get state
@@ -159,8 +150,6 @@ public class Board
             }
         }
 
-        Debug.Log("No king???");
-
         return 0;
 
     }
@@ -187,13 +176,6 @@ public class Board
 
         //split FEN string
         string[] splittedFEN = fen.Split(' ');
-        // For fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
-        // The splittedFEN array:
-        // splittedFEN[0] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-        // splittedFEN[1] = "w"
-        // splittedFEN[2] = "KQkq"
-        // splittedFEN[3] = "-"
-
 
         //piece placement splittedFEN[0]
         Dictionary<char, Piece.Type> pieceTypeFromSymbol = new Dictionary<char, Piece.Type>()
@@ -250,7 +232,6 @@ public class Board
         currentState.turnColor = splittedFEN[1].Equals("w") ? Piece.Color.White : Piece.Color.Black;
 
         // castling rights splittedFEN[2]
-
         currentState.canCastleShortWhite = false;
         currentState.canCastleLongWhite = false;
         currentState.canCastleShortBlack = false;
@@ -288,7 +269,6 @@ public class Board
         }
 
         //en passant splitttedFEN[3]
-
         if (splittedFEN[3].Equals("-"))
         {
             currentState.doublePushedPawnColor = Piece.Color.None;
@@ -371,7 +351,6 @@ public class Board
         fenString.AppendFormat(" {0} ", turnColor);
 
         // castling rights
-
         if (currentState.canCastleWhite || currentState.canCastleBlack)
         {
             if (currentState.canCastleWhite)
@@ -547,7 +526,6 @@ public class Board
 
             default:
                 currentState.doublePushedPawnColor = Piece.Color.None;
-                //Might need to delete the squareSourceIndex piece // To check later
                 pieces[move.squareTargetIndex] = move.pieceSource;
                 break;
         }
@@ -581,11 +559,9 @@ public class Board
         }
 
         // push the move into the stack
-
         moves.Push(move);
 
         // change turn color
-
         currentState.turnColor = currentState.turnColor == Piece.Color.White ? Piece.Color.Black : Piece.Color.White;
 
     }
